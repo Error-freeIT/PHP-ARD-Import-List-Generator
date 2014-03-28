@@ -27,7 +27,7 @@ generateARDList($filename, $devices);
  
 function generateARDList($filename, $devices) {
 			
-	// ARD plist file header
+	// ARD file header
 	$header = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
 			  '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n" .
 			  '<plist version="1.0">' . "\n" .
