@@ -34,6 +34,8 @@ function generateARDList($filename, $devices) {
 			  '<dict>' . "\n" .
 			  	'<key>items</key>' . "\n" .
 			  	'<array>' . "\n";
+	
+	$body = '';
 						
 	// Device entires
 	foreach($devices as $device) {
