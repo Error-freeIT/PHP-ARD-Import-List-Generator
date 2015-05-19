@@ -1,73 +1,81 @@
 <?php
 
-/*** Start of example use ***/
+// This function is used to generate a random UUID.
+// Source: http://stackoverflow.com/a/2040279
+function generateUUID() {
+    return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+        mt_rand( 0, 0xffff ),
+        mt_rand( 0, 0x0fff ) | 0x4000,
+        mt_rand( 0, 0x3fff ) | 0x8000,
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+    );
+}
 
-// Set PHP time zone for date() function
+// Set PHP time zone for future use of date() function.
 date_default_timezone_set('Australia/Adelaide');
 
-// Example filename
+// Filename
 $filename = 'ARD List ' . date("d-m-y");
-
-// Example device array
-$devices = array(array('hostname'=>'Mac-A','ip'=>'192.168.1.10'),array('hostname'=>'Mac-B','ip'=>'192.168.1.11'),array('hostname'=>'Mac-C','ip'=>'192.168.1.12'));
-
-// Call the function
-generateARDList($filename, $devices);
-
-/*** End of example use ***/
-
 
 /* generateARDList requires:
  * A string used for the filename of the ARD list.
- *
- * An array of devices, with each device containing a hostname and an IP address.
- *
+ * An array of devices, with each device containing a name, a networkAddress (IP address) and optionally a hardwareAddress (mac address).
+ *  Example: $devices = array(array('name'=>'Mac-A','networkAddress'=>'192.168.1.10'),array('name'=>'Mac-B','networkAddress'=>'192.168.1.11','hardwareAddress'=>'0c:4d:e9:c8:50:a0'));
  * NOTE: Once ARD connects to a Mac the Mac's actual hostname is always displayed.
  */
  
 function generateARDList($filename, $devices) {
 			
-	// ARD file header
-	$header = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
-			  '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n" .
-			  '<plist version="1.0">' . "\n" .
-			  '<dict>' . "\n" .
-			  	'<key>items</key>' . "\n" .
-			  	'<array>' . "\n";
+	// Plist header.
+	$header = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>' . "\n";
 	
 	$body = '';
 						
-	// Device entires
 	foreach($devices as $device) {
-		
-		$name = $device['hostname'];
-		$ip = $device['ip'];
-		
-		if (!($name == '' || $ip == '')) {
-		
-			$body .= '<dict>' . "\n" .
-						'<key>hostname</key>' . '<string>' . $name . '.local.</string>' . "\n" .
-						'<key>name</key><string>' . $name . '</string>' . "\n" .
-						'<key>networkAddress</key><string>' . $ip . '</string>' . "\n" .
-						'<key>networkPort</key><integer>3283</integer>' . "\n" .
-						'<key>preferHostname</key><false/>' . "\n" .
-						'<key>vncPort</key><integer>5900</integer>' . "\n" .
-					 '</dict>' . "\n";
+		// Check required attributes are set.
+		if (isset($device['name']) && isset($device['networkAddress'])) {
+			
+			$body .= '		<dict>' . "\n";
+			
+			// If set include device mac address.
+			if (isset($device['hardwareAddress'])) {
+				$body .= '			<key>hardwareAddress</key>
+			<string>' . $device['hardwareAddress'] . '</string>' . "\n";
+			}
+			
+			$body .= '			<key>name</key>
+			<string>' . $device['name'] . '</string>
+			<key>networkAddress</key>
+			<string>' . $device['networkAddress'] . '</string>
+			<key>networkPort</key>
+			<integer>3283</integer>
+			<key>vncPort</key>
+			<integer>5900</integer>
+		</dict>' . "\n";
 		
 		}
 	
 	}
 	
-	// ARD file footer
-	$footer = 	'</array>' . "\n" .
-			  	'<key>listName</key><string>' . $filename . '</string>' . "\n" .
-			  	'<key>uuid</key><string>7E6A9DD6-122F-4C84-96AA-DB4FDAF66B3D</string>' . "\n" .
-			  '</dict>' . "\n" .
-			  '</plist>';
-
+	// Plist footer.
+	$footer = 	'	</array>
+	<key>listName</key>
+	<string>' . $filename . '</string>
+	<key>uuid</key>
+	<string>' . generateUUID() . '</string>
+</dict>
+</plist>';
+	
+	// Put it all together.
 	$data = $header . $body . $footer;
 	
-	// Set download filename and trigger browser download
+	// Set filename and trigger browser download.
 	header('Content-Type: application/plist');
 	header('Content-Disposition: attachment; filename="' . $filename . '.plist"');
 	header('Content-Transfer-Encoding: binary');
@@ -76,5 +84,8 @@ function generateARDList($filename, $devices) {
 	echo $data;
 	
 }
-	
+
+// Call the function.
+generateARDList($filename, $devices);
+
 ?>
