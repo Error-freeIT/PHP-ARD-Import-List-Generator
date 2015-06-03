@@ -39,7 +39,7 @@ function generateARDList($filename, $devices) {
 						
 	foreach($devices as $device) {
 		// Check required attributes are set.
-		if (isset($device['name']) && isset($device['networkAddress'])) {
+		if (isset($device['name']) && !empty($device['name']) && isset($device['networkAddress']) && !empty($device['networkAddress'])) {
 			
 			$body .= '		<dict>' . "\n";
 			
